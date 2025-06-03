@@ -61,7 +61,7 @@ const AddWasteScreen = () => {
       <Input
         placeholder="Type of waste (e.g., Sawdust)"
         value={form.type}
-        onChangeText={(text) => setForm(prev => ({ ...prev, type: text }))}
+        onChangeText={(text: string) => setForm(prev => ({ ...prev, type: text }))}
       />
 
       <Input

@@ -4,7 +4,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabParamList } from '../types/navigation';
 import { Ionicons } from '@expo/vector-icons';
-import { RootStackParamList, MainTabParamList } from '../types/navigation';
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -17,11 +16,49 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const MainTabs = () => {
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Add Waste" component={AddWasteScreen} />
-      <Tab.Screen name="Scan QR" component={ScanQRScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap;
+
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'AddWaste') {
+            iconName = focused ? 'add-circle' : 'add-circle-outline';
+          } else if (route.name === 'ScanQR') {
+            iconName = focused ? 'qr-code' : 'qr-code-outline';
+          } else if (route.name === 'Profile') {
+            iconName = focused ? 'person' : 'person-outline';
+          } else {
+            iconName = 'help-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#2196F3',
+        tabBarInactiveTintColor: 'gray',
+      })}
+    >
+      <Tab.Screen 
+        name="Home" 
+        component={HomeScreen}
+        options={{ title: 'Home' }}
+      />
+      <Tab.Screen 
+        name="AddWaste" 
+        component={AddWasteScreen}
+        options={{ title: 'Add Waste' }}
+      />
+      <Tab.Screen 
+        name="ScanQR" 
+        component={ScanQRScreen}
+        options={{ title: 'Scan QR' }}
+      />
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileScreen}
+        options={{ title: 'Profile' }}
+      />
     </Tab.Navigator>
   );
 };
@@ -29,7 +66,7 @@ const MainTabs = () => {
 const AppNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator id={undefined}>
         <Stack.Screen
           name="MainTabs"
           component={MainTabs}
