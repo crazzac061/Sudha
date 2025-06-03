@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, Modal, Alert, ActivityIndicator } from 'r
 import { Input, Button, Text, Overlay } from '@rneui/themed';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import QRCode from 'react-native-qrcode-svg';
+import QRCode  from 'react-native-qrcode-svg';
 import * as FileSystem from 'expo-file-system';
 import { WasteQRData, formatWasteQRData, shareQRCode } from '../utils/wasteUtils';
 
@@ -17,6 +17,7 @@ interface WasteForm {
 }
 
 const AddWasteScreen = () => {
+    const qeRef=useRef<QRCode>(null);
   const [form, setForm] = useState<WasteForm>({
     type: '',
     quantity: '',
@@ -27,7 +28,7 @@ const AddWasteScreen = () => {
   });
   const [qrData, setQrData] = useState<WasteQRData | null>(null);
   const [showQR, setShowQR] = useState(false);
-  const qrRef = useRef<QRCode>();
+  const qrRef = useRef<any>(null);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -75,24 +76,33 @@ const AddWasteScreen = () => {
   };
 
   const saveQRCode = async () => {
-    if (!qrRef.current || !qrData) return;
+    if (!qrRef.current || !qrData) {
+      Alert.alert('Error', 'QR Code not ready');
+      return;
+    }
     
     setSaving(true);
     try {
       const path = `${FileSystem.documentDirectory}waste-qr-${qrData.wasteId}.png`;
-      qrRef.current.toDataURL(async (data: string) => {
-        try {
-          const base64Data = `data:image/png;base64,${data}`;
-          await FileSystem.writeAsStringAsync(path, base64Data.split('base64,')[1], {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          Alert.alert('Success', 'QR Code saved successfully!');
-        } catch (err) {
-          Alert.alert('Error', 'Failed to save QR code');
-        }
+      
+      // Use Promise to handle the async toDataURL callback
+      const qrDataUrl = await new Promise<string>((resolve, reject) => {
+        qrRef.current?.toDataURL(
+          (data: string) => resolve(data),
+          (error: Error) => reject(error)
+        );
       });
+
+      await FileSystem.writeAsStringAsync(
+        path,
+        qrDataUrl,
+        { encoding: FileSystem.EncodingType.Base64 }
+      );
+      
+      Alert.alert('Success', 'QR Code saved successfully!');
     } catch (error) {
-      Alert.alert('Error', 'Failed to generate QR code');
+      console.error('Save QR error:', error);
+      Alert.alert('Error', 'Failed to save QR code');
     } finally {
       setSaving(false);
     }
