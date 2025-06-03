@@ -9,8 +9,8 @@ export type RootStackParamList = {
 
 export type MainTabParamList = {
   Home: undefined;
-  'Add Waste': undefined;
-  'Scan QR': undefined;
+  AddWaste: undefined;
+  ScanQR: undefined;
   Profile: undefined;
 };
 
