@@ -1,8 +1,9 @@
 declare module 'react-native-safe-area-context' {
   import * as React from 'react';
   import { ViewStyle, StyleProp } from 'react-native';
+  import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-  export type Edge = 'top' | 'right' | 'bottom' | 'left';
+export type Edge = 'top' | 'right' | 'bottom' | 'left';
 
   export interface SafeAreaViewProps {
     children?: React.ReactNode;

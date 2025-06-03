@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
 import { Text, Button } from '@rneui/themed';
-import { BarCodeScanner, BarCodeScannedCallback } from 'expo-barcode-scanner';
-import { Camera as ExpoCamera } from 'expo-camera';
+import { Camera, CameraView, type BarcodeScanningResult } from 'expo-camera';
 import { WasteQRData } from '../utils/wasteUtils';
 import { WasteDetails } from '../components/WasteDetails';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const ScanQRScreen = () => {
+const ScanQRScreen: React.FC = () => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [scannedWaste, setScannedWaste] = useState<WasteQRData | null>(null);
 
   useEffect(() => {
     const getCameraPermission = async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
     };
 
@@ -25,7 +25,7 @@ const ScanQRScreen = () => {
     setScannedWaste(null);
   };
 
-  const handleBarCodeScanned: BarCodeScannedCallback = ({ type, data }) => {
+  const handleBarCodeScanned = ({ type, data }: BarcodeScanningResult) => {
     setScanned(true);
     try {
       const wasteData = JSON.parse(data) as WasteQRData;
@@ -42,31 +42,42 @@ const ScanQRScreen = () => {
   };
 
   if (hasPermission === null) {
-    return <Text>Requesting camera permission...</Text>;
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.message}>Requesting camera permission...</Text>
+      </SafeAreaView>
+    );
   }
 
   if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.message}>No access to camera</Text>
+      </SafeAreaView>
+    );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.camera}>
-        <BarCodeScanner
-          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+        <CameraView
           style={StyleSheet.absoluteFillObject}
-          barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
-        />
-        <View style={styles.overlay}>
-          {!scannedWaste && scanned && (
-            <Button
-              title="Tap to Scan Again"
-              onPress={resetScan}
-              containerStyle={styles.button}
-              icon={{ name: 'qr-code-scanner', color: 'white' }}
-            />
-          )}
-        </View>
+          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr'],
+          }}
+        >
+          <View style={styles.overlay}>
+            {!scannedWaste && scanned && (
+              <Button
+                title="Tap to Scan Again"
+                onPress={resetScan}
+                containerStyle={styles.button}
+                icon={{ name: 'qr-code-scanner', color: 'white' }}
+              />
+            )}
+          </View>
+        </CameraView>
       </View>
       
       {scannedWaste && (
@@ -77,7 +88,7 @@ const ScanQRScreen = () => {
           />
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -107,6 +118,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     padding: 20,
+  },
+  message: {
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 

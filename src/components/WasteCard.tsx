@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Card, Text, Button } from '@rneui/themed';
+import { Card, Text as RNEText, Button } from '@rneui/themed';
 
 interface WasteCardProps {
   waste: {
@@ -19,10 +19,10 @@ const WasteCard = ({ waste, onPress }: WasteCardProps) => {
     <Card>
       <Card.Title>{waste.type}</Card.Title>
       <Card.Divider />
-      <Text style={styles.detail}>Quantity: {waste.quantity} {waste.unit}</Text>
-      <Text style={styles.detail}>Condition: {waste.condition}</Text>
-      <Text style={styles.detail}>Location: {waste.location}</Text>
-      <Text style={styles.detail}>Available from: {waste.availableFrom}</Text>
+      <RNEText style={styles.detail}>Quantity: {waste.quantity} {waste.unit}</RNEText>
+      <RNEText style={styles.detail}>Condition: {waste.condition}</RNEText>
+      <RNEText style={styles.detail}>Location: {waste.location}</RNEText>
+      <RNEText style={styles.detail}>Available from: {waste.availableFrom}</RNEText>
       {onPress && (
         <Button
           title="View Details"
