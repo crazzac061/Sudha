@@ -9,6 +9,7 @@ import HomeScreen from '../screens/HomeScreen';
 import AddWasteScreen from '../screens/AddWasteScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import ScanQRScreen from '../screens/ScanQRScreen';
+import CraftSuggestionsScreen from '../screens/CraftSuggestionsScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -69,6 +70,13 @@ const AppNavigator = () => {
         name="MainTabs"
         component={MainTabs}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CraftSuggestions"
+        component={CraftSuggestionsScreen}
+        options={({ route }) => ({
+          title: `Craft Ideas for ${route.params?.wasteType || 'Waste'}`,
+        })}
       />
     </Stack.Navigator>
   );

@@ -5,6 +5,10 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 export type RootStackParamList = {
   MainTabs: undefined;
   AddWaste: undefined;
+  CraftSuggestions: {
+    wasteType: string;
+    wasteId: string;
+  };
 };
 
 export type MainTabParamList = {
@@ -12,6 +16,10 @@ export type MainTabParamList = {
   AddWaste: undefined;
   ScanQR: undefined;
   Profile: undefined;
+  CraftSuggestions: {
+    wasteId: string;
+    wasteType: string;
+  };
 };
 
 export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
