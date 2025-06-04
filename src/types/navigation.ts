@@ -9,6 +9,8 @@ export type RootStackParamList = {
     wasteType: string;
     wasteId: string;
   };
+  Login: undefined;
+  Register: undefined;
 };
 
 export type MainTabParamList = {
@@ -16,10 +18,11 @@ export type MainTabParamList = {
   AddWaste: undefined;
   ScanQR: undefined;
   Profile: undefined;
-  CraftSuggestions: {
-    wasteId: string;
-    wasteType: string;
-  };
+};
+
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
 };
 
 export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -28,6 +31,8 @@ export type TabNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList>,
   NativeStackNavigationProp<RootStackParamList>
 >;
+
+export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
 
 declare global {
   namespace ReactNavigation {
