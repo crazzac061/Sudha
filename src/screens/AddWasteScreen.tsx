@@ -1,11 +1,55 @@
 import React, { useState, useRef } from 'react';
+<<<<<<< HEAD
+import { View, StyleSheet, ScrollView, Modal, Alert, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
+import { Input, Button, Text, Overlay, Card, Icon } from '@rneui/themed';
+=======
 import { View, StyleSheet, ScrollView, Modal, Alert, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
 import { Input, Button, Text, Overlay, Icon } from '@rneui/themed';
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import QRCode from 'react-native-qrcode-svg';
 import * as FileSystem from 'expo-file-system';
 import { WasteQRData, formatWasteQRData, shareQRCode } from '../utils/wasteUtils';
+<<<<<<< HEAD
+import * as tf from '@tensorflow/tfjs';
+import { bundleResourceIO, decodeJpeg } from '@tensorflow/tfjs-react-native';
+import { Linking } from 'react-native';
+
+// Define the DIY recommendation types
+type DIYProject = {
+  title: string;
+  description: string;
+  difficulty: string;
+  youtubeLink: string;
+  materials: string[];
+};
+
+type WasteType = 'plastic_bottle' | 'glass_bottles' | 'paper_waste' | 'cardboard';
+
+// Add DIY recommendations database
+const diyRecommendations: Record<WasteType, DIYProject[]> = {
+  plastic_bottle: [
+    {
+      title: 'Decorative Flower Vase',
+      description: 'Turn plastic bottles into beautiful vases',
+      difficulty: 'Easy',
+      youtubeLink: 'https://youtube.com/watch?v=example1',
+      materials: ['Plastic bottle', 'Paint', 'Scissors', 'Decorative items']
+    },
+    {
+      title: 'Vertical Garden',
+      description: 'Create hanging planters from bottles',
+      difficulty: 'Medium',
+      youtubeLink: 'https://youtube.com/watch?v=example2',
+      materials: ['Plastic bottles', 'Rope', 'Soil', 'Seeds']
+    }
+  ],
+  glass_bottles: [],
+  paper_waste: [],
+  cardboard: []
+};
+=======
 import { useNavigation } from '@react-navigation/native';
 import { RootStackNavigationProp } from '../types/navigation';
 interface WasteForm {
@@ -17,6 +61,7 @@ interface WasteForm {
   images: ImagePicker.ImagePickerAsset[];
   location: Location.LocationObject | null;
 }
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
 
 const WASTE_TYPES = [
   'Wood/Sawdust',
@@ -45,6 +90,26 @@ const MOCK_SUGGESTIONS = {
 };
 
 const AddWasteScreen = () => {
+<<<<<<< HEAD
+  const qeRef=useRef<QRCode>(null);
+  interface WasteForm {
+    type: string;
+    quantity: string;
+    unit: string;
+    condition: string;
+    images: ImagePicker.ImagePickerAsset[];
+    location: Location.LocationObject | null;
+  }
+  
+  const [form, setForm] = useState<WasteForm>({
+      type: '',
+      quantity: '',
+      unit: 'kg',
+      condition: '',
+      images: [],
+      location: null,
+    });
+=======
   const qrRef = useRef<QRCode>(null);
   const navigation = useNavigation<RootStackNavigationProp>();
 
@@ -58,6 +123,7 @@ const AddWasteScreen = () => {
     location: null,
   });
 
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
   const [qrData, setQrData] = useState<WasteQRData | null>(null);
   const [showQR, setShowQR] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -169,7 +235,100 @@ const AddWasteScreen = () => {
     setShowQR(true);
   };
 
+  const [showDIY, setShowDIY] = useState(false);
+  const [diyImage, setDiyImage] = useState<string | null>(null);
+  const [diyLoading, setDiyLoading] = useState(false);
+  const [diyResults, setDiyResults] = useState<any[]>([]);
+  const modelRef = useRef<tf.LayersModel | null>(null);
+
+  const loadModel = async () => {
+    try {
+      await tf.ready();
+      // Load model directly from Teachable Machine URL
+      modelRef.current = await tf.loadLayersModel(
+        'https://teachablemachine.withgoogle.com/models/mH9HKRCUG/model.json'
+      );
+    } catch (error) {
+      console.error('Error loading model:', error);
+      Alert.alert('Error', 'Failed to load AI model');
+    }
+  };
+
+  const analyzeDIYImage = async (imageUri: string) => {
+    setDiyLoading(true);
+    try {
+      if (!modelRef.current) await loadModel();
+      
+      const imgB64 = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const imgBuffer = tf.util.encodeString(imgB64, 'base64').buffer;
+      const raw = new Uint8Array(imgBuffer);
+      const imageTensor = decodeJpeg(raw);
+      
+      // Process image
+      const resized = tf.image.resizeBilinear(imageTensor, [224, 224]);
+      const expanded = resized.expandDims(0);
+      const normalized = expanded.div(255.0);
+      const prediction = await modelRef.current?.predict(normalized);
+      
+      if (prediction) {
+        // Get the index of the highest probability
+        const predictionArray = await prediction.data();
+        const maxIndex = predictionArray.indexOf(Math.max(...predictionArray));
+        
+        // Map index to waste type based on your Teachable Machine classes
+        const wasteTypes = ['plastic_bottle', 'glass_bottles', 'paper_waste', 'cardboard'];
+        const predictedType = wasteTypes[maxIndex];
+        
+        if (diyRecommendations[predictedType]) {
+          setDiyResults(diyRecommendations[predictedType]);
+          Alert.alert(
+            'Waste Identified!', 
+            `This appears to be ${predictedType.replace('_', ' ')}. Here are some DIY ideas!`
+          );
+        } else {
+          Alert.alert('Sorry', 'No DIY recommendations available for this type of waste yet.');
+        }
+      }
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      Alert.alert('Error', 'Failed to analyze image');
+    } finally {
+      setDiyLoading(false);
+    }
+  };
+
+  const pickDIYImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setDiyImage(result.assets[0].uri);
+      analyzeDIYImage(result.assets[0].uri);
+    }
+  };
+
+  const openYoutubeLink = (url: string) => {
+    Linking.openURL(url);
+  };
+
   return (
+<<<<<<< HEAD
+    <>
+      <ScrollView style={styles.container}>
+        <Text h4 style={styles.title}>List Your Waste</Text>
+        
+        <Input
+          placeholder="Type of waste (e.g., Sawdust)"
+          value={form.type}
+          onChangeText={(text: string) => setForm(prev => ({ ...prev, type: text }))}
+          errorStyle={{ color: 'red' }}
+          errorMessage={form.type.trim() ? '' : 'Required field'}
+        />
+=======
     <ScrollView style={styles.container}>
       <Text h4 style={styles.title}>List Your Waste</Text>
       
@@ -193,6 +352,7 @@ const AddWasteScreen = () => {
           ))}
         </ScrollView>
       </View>
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
 
       <Input
         placeholder="Quantity"
@@ -212,6 +372,57 @@ const AddWasteScreen = () => {
         label="Condition *"
       />
 
+<<<<<<< HEAD
+        <Button
+          title={`Add Photos (${form.images.length} selected)`}
+          onPress={pickImage}
+          containerStyle={styles.buttonContainer}
+          icon={{
+            name: 'image',
+            type: 'material',
+            size: 24,
+            color: 'white',
+          }}
+        />
+
+        <Button
+          title={form.location ? "Location Added ✓" : "Get Current Location"}
+          onPress={getLocation}
+          containerStyle={styles.buttonContainer}
+          disabled={!!form.location}
+          icon={{
+            name: 'location-on',
+            type: 'material',
+            size: 24,
+            color: 'white',
+          }}
+        />
+
+        <Button
+          title="Submit Listing"
+          onPress={handleSubmit}
+          containerStyle={styles.submitButton}
+          icon={{
+            name: 'check-circle',
+            type: 'material',
+            size: 24,
+            color: 'white',
+          }}
+        />
+
+        <Button
+          title="Get DIY Ideas"
+          onPress={() => setShowDIY(true)}
+          containerStyle={styles.diyButton}
+          icon={{
+            name: 'lightbulb',
+            type: 'material',
+            size: 24,
+            color: 'white',
+          }}
+        />
+      </ScrollView>
+=======
       <Input
         placeholder="Describe your waste material and any specific details"
         value={form.description}
@@ -307,6 +518,7 @@ const AddWasteScreen = () => {
           </View>
         </View>
       </Modal>
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
 
       <Modal
         visible={showQR}
@@ -324,7 +536,9 @@ const AddWasteScreen = () => {
                   size={200}
                   ref={qrRef}
                 />
-                <Text style={styles.wasteId}>ID: {qrData.wasteId}</Text>
+                {qrData && 'wasteId' in qrData && (
+                  <Text style={styles.wasteId}>ID: {(qrData as WasteQRData).wasteId}</Text>
+                )}
               </View>
             )}
             <View style={styles.modalButtons}>
@@ -347,21 +561,133 @@ const AddWasteScreen = () => {
           </View>
         </View>
       </Modal>
+<<<<<<< HEAD
+
+      <Modal
+        visible={showDIY}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowDIY(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text h4 style={styles.modalTitle}>DIY Waste Projects</Text>
+            
+            {!diyImage ? (
+              <Button
+                title="Upload Waste Photo"
+                onPress={pickDIYImage}
+                containerStyle={styles.uploadButton}
+                icon={{ name: 'camera', type: 'material-community', color: 'white' }}
+              />
+            ) : (
+              <Image source={{ uri: diyImage }} style={styles.previewImage} />
+            )}
+
+            {diyLoading && (
+              <ActivityIndicator size="large" color="#43A047" />
+            )}
+
+            <ScrollView style={styles.recommendationsContainer}>
+              {diyResults.map((item, index) => (
+                <Card key={index} containerStyle={styles.diyCard}>
+                  <Card.Title style={styles.diyTitle}>{item.title}</Card.Title>
+                  <Card.Divider />
+                  <Text style={styles.diyDescription}>{item.description}</Text>
+                  <Text style={styles.diyDifficulty}>Difficulty: {item.difficulty}</Text>
+                  <Text style={styles.diyMaterials}>
+                    Materials needed:{'\n'}
+                    {item.materials.join('\n• ')}
+                  </Text>
+                  <Button
+                    title="Watch Tutorial"
+                    onPress={() => openYoutubeLink(item.youtubeLink)}
+                    containerStyle={styles.tutorialButton}
+                    buttonStyle={styles.tutorialButtonStyle}
+                  />
+                </Card>
+              ))}
+            </ScrollView>
+
+            <Button
+              title="Close"
+              onPress={() => {
+                setShowDIY(false);
+                setDiyImage(null);
+                setDiyResults([]);
+              }}
+              containerStyle={styles.closeButton}
+              type="outline"
+            />
+          </View>
+        </View>
+      </Modal>
+    </>
+=======
     </ScrollView>
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+<<<<<<< HEAD
+    backgroundColor: '#E8F5E9', // Light green background
+    padding: 16,
+  },
+  qrContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    marginHorizontal: 4,
+=======
     backgroundColor: '#fff',
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
   },
   title: {
+    color: '#2E7D32',
     textAlign: 'center',
     marginVertical: 20,
   },
   section: {
     marginBottom: 20,
+<<<<<<< HEAD
+    fontSize: 24,
+  },
+  inputContainer: {
+    backgroundColor: '#F1F8E9',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 15,
+  },
+  inputLabel: {
+    color: '#2E7D32',
+    fontSize: 16,
+  },
+  buttonContainer: {
+    marginVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#43A047',
+  },
+  submitButton: {
+    marginTop: 20,
+    marginBottom: 40,
+    backgroundColor: '#2E7D32',
+    borderRadius: 8,
+  },
+  diyButton: {
+    marginTop: 20,
+    backgroundColor: '#2E7D32', // Dark green
+    borderRadius: 8,
+=======
     paddingHorizontal: 15,
   },
   sectionTitle: {
@@ -449,6 +775,7 @@ const styles = StyleSheet.create({
   suggestionDifficulty: {
     color: '#666',
     marginVertical: 5,
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
   },
   modalContainer: {
     flex: 1,
@@ -457,6 +784,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
+<<<<<<< HEAD
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 15,
+    width: '90%',
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    textAlign: 'center',
+    color: '#2E7D32',
+    marginBottom: 20,
+=======
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 20,
@@ -481,18 +820,68 @@ const styles = StyleSheet.create({
   qrContainer: {
     alignItems: 'center',
     marginVertical: 20,
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
   },
-  wasteId: {
-    marginTop: 10,
-    fontSize: 16,
+  uploadButton: {
+    marginVertical: 20,
+    backgroundColor: '#43A047',
+    borderRadius: 8,
+  },
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  recommendationsContainer: {
+    maxHeight: 400,
+  },
+  diyCard: {
+    borderRadius: 10,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#81C784',
+    elevation: 3,
+  },
+  diyTitle: {
+    color: '#2E7D32',
+    fontSize: 18,
     fontWeight: 'bold',
   },
+<<<<<<< HEAD
+  diyDescription: {
+    color: '#1B5E20',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  diyDifficulty: {
+    color: '#43A047',
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  diyMaterials: {
+    color: '#1B5E20',
+    fontSize: 14,
+    marginVertical: 10,
+  },
+  tutorialButton: {
+    marginTop: 10,
+  },
+  tutorialButtonStyle: {
+    backgroundColor: '#43A047',
+    borderRadius: 8,
+  },
+  closeButton: {
+    marginTop: 20,
+    borderColor: '#43A047',
+=======
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
   buttonMargin: {
     marginRight: 10,
+>>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
   },
 });
 
