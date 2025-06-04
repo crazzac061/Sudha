@@ -1,6 +1,6 @@
 import { User, LoginCredentials, RegisterData } from '../types/user';
 
-const API_BASE_URL = 'http://localhost:5000/api'; // Development server URL
+const API_BASE_URL = 'http://192.168.1.80:3000/api'; // Development server URL
 
 interface WasteListing {
   type: string;

@@ -1,63 +1,62 @@
 import express from 'express';
-import cors from 'cors';
 import mongoose from 'mongoose';
+import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
-import cookieParser from 'cookie-parser';
-import compression from 'compression';
-
-// Security Middleware
-import { securityMiddleware } from './middleware/security';
-import { apiLimiter, loginLimiter, createAccountLimiter } from './middleware/rateLimiter';
-
-// Routes
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import userRoutes from './routes/userRoutes';
 import wasteRoutes from './routes/wasteRoutes';
 import { errorHandler } from './middleware/errorHandler';
+import helmet from 'helmet';
+import path from 'path';
 
 dotenv.config();
 
 const app = express();
 
-// Apply security middleware
-app.use(securityMiddleware);
-
-// Basic middleware
+// CORS configuration for development
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  credentials: true
-}));
-app.use(cookieParser());
-app.use(compression());
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-
-// Static files with cache control
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
-  maxAge: '1d',
-  etag: true
+  origin: '*', // Allow all origins in development
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
 
-// Apply rate limiters
-app.use('/api/', apiLimiter);
-app.use('/api/users/login', loginLimiter);
-app.use('/api/users/register', createAccountLimiter);
+// Security middleware
+app.use(helmet());
+
+// Parse JSON bodies
+app.use(express.json());
+
+// Static files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
-app.use('/api/users', userRoutes);
+app.use('/api/auth', userRoutes);
 app.use('/api/waste', wasteRoutes);
 
 // Error handling
 app.use(errorHandler);
 
-// Database connection
-mongoose
-  .connect(process.env.MONGODB_URI!)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+const PORT =  3000;
+const HOST = '0.0.0.0'; // Listen on all network interfaces
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Setup MongoDB
+const startServer = async () => {
+  try {
+    const mongod = await MongoMemoryServer.create();
+    const mongoUri = mongod.getUri();
+    
+    await mongoose.connect(mongoUri);
+    console.log('Connected to MongoDB');
+
+    app.listen(PORT, HOST, () => {
+      console.log(`Server is running on http://${HOST}:${PORT}`);
+      console.log(`Server is also accessible at http://192.168.1.80:${PORT}`);
+    });
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  }
+};
+
+startServer();

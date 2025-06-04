@@ -21,14 +21,15 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",     
+         "usesCleartextTraffic": true
+
       },
       "permissions": [
         "CAMERA",
-        "android.permission.CAMERA",
-        "CAMERA",
         "android.permission.CAMERA"
       ],
+      "usesCleartextTraffic": true,
       "package": "com.anonymous.circularchainapp"
     },
     "web": {

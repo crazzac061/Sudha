@@ -21,20 +21,48 @@ export const RegisterScreen = () => {
     role: 'producer' as const,
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation();
 
-  const handleRegister = async () => {
-    if (!formData.name || !formData.email || !formData.password) {
-      Alert.alert('Error', 'Please fill in all required fields');
-      return;
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      Alert.alert('Error', 'Please enter your name');
+      return false;
     }
+    if (!formData.email.trim()) {
+      Alert.alert('Error', 'Please enter your email');
+      return false;
+    }
+    if (!formData.password || formData.password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long');
+      return false;
+    }
+    return true;
+  };
+
+  const handleRegister = async () => {
+    setError(null);
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
       await authService.register(formData);
-      // Navigation will be handled by the auth state change
-    } catch (error) {
-      Alert.alert('Registration Failed', 'Please try again');
+      Alert.alert(
+        'Success',
+        'Registration successful! Please login.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login' as never)
+          }
+        ]
+      );
+    } catch (error: any) {
+      setError(error.message);
+      Alert.alert(
+        'Registration Failed',
+        error.message || 'Please try again'
+      );
     } finally {
       setLoading(false);
     }
