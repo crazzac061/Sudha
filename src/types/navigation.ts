@@ -1,9 +1,11 @@
-import type { CompositeNavigationProp } from '@react-navigation/native';
+// import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { CompositeNavigationProp } from '@react-navigation/native';
 
 export type RootStackParamList = {
   MainTabs: undefined;
+  TabNavigator: undefined;
   AddWaste: undefined;
   CraftSuggestions: {
     wasteType: string;
