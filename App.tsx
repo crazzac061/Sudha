@@ -4,7 +4,6 @@ import { ThemeProvider } from '@rneui/themed';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { View } from 'react-native';
 
 export default function App() {
   return (
@@ -12,10 +11,8 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider>
           <NavigationContainer>
-            <View style={{ flex: 1 }}>
-              <AppNavigator />
-              <StatusBar style="auto" />
-            </View>
+            <AppNavigator />
+            <StatusBar style="auto" />
           </NavigationContainer>
         </ThemeProvider>
       </SafeAreaProvider>

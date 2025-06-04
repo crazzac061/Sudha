@@ -1,5 +1,4 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabParamList } from '../types/navigation';
@@ -65,15 +64,13 @@ const MainTabs = () => {
 
 const AppNavigator = () => {
   return (
-    <NavigationContainer>
-      <Stack.Navigator id={undefined}>
-        <Stack.Screen
-          name="MainTabs"
-          component={MainTabs}
-          options={{ headerShown: false }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Stack.Navigator>
+      <Stack.Screen
+        name="MainTabs"
+        component={MainTabs}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
   );
 };
 
