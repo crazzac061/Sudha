@@ -397,7 +397,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',
-<<<<<<< HEAD
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     marginBottom: 10,
@@ -456,6 +455,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#43A047',
     paddingVertical: 12,
     borderRadius: 8,
+<<<<<<< HEAD
 =======
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
@@ -609,6 +609,8 @@ const styles = StyleSheet.create({
     margin: 20,
     borderRadius: 10,
 >>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
+=======
+>>>>>>> 5f11177e6954e75c85f1c2e07789bf76f3e2ee01
   },
   divider: {
     backgroundColor: '#81C784',
@@ -628,6 +630,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginVertical: 5,
+  },
+  statText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333'
+  },
+  editButton: {
+    backgroundColor: '#43A047'
+  },
+  location: {
+    color: '#666',
+    fontSize: 16,
+    marginTop: 5
+  },
+  statRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5
+  },
+  badgesCard: {
+    borderRadius: 15,
+    marginHorizontal: 10,
+    marginVertical: 8
+  },
+  statsCard: {
+    borderRadius: 15,
+    marginHorizontal: 10,
+    marginVertical: 8
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5
   }
 });
 export default ProfileScreen;
