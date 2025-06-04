@@ -1,68 +1,25 @@
 import React, { useState, useRef } from 'react';
-<<<<<<< HEAD
-import { View, StyleSheet, ScrollView, Modal, Alert, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
-import { Input, Button, Text, Overlay, Card, Icon } from '@rneui/themed';
-=======
-import { View, StyleSheet, ScrollView, Modal, Alert, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
-import { Input, Button, Text, Overlay, Icon } from '@rneui/themed';
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
+import { 
+  View, 
+  StyleSheet, 
+  ScrollView, 
+  Modal, 
+  Alert, 
+  ActivityIndicator, 
+  Image, 
+  TouchableOpacity,
+  Linking 
+} from 'react-native';
+import { Input, Button, Text, Card, Icon } from '@rneui/themed';
+import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import QRCode from 'react-native-qrcode-svg';
 import * as FileSystem from 'expo-file-system';
 import { WasteQRData, formatWasteQRData, shareQRCode } from '../utils/wasteUtils';
-<<<<<<< HEAD
-import * as tf from '@tensorflow/tfjs';
-import { bundleResourceIO, decodeJpeg } from '@tensorflow/tfjs-react-native';
-import { Linking } from 'react-native';
-
-// Define the DIY recommendation types
-type DIYProject = {
-  title: string;
-  description: string;
-  difficulty: string;
-  youtubeLink: string;
-  materials: string[];
-};
-
-type WasteType = 'plastic_bottle' | 'glass_bottles' | 'paper_waste' | 'cardboard';
-
-// Add DIY recommendations database
-const diyRecommendations: Record<WasteType, DIYProject[]> = {
-  plastic_bottle: [
-    {
-      title: 'Decorative Flower Vase',
-      description: 'Turn plastic bottles into beautiful vases',
-      difficulty: 'Easy',
-      youtubeLink: 'https://youtube.com/watch?v=example1',
-      materials: ['Plastic bottle', 'Paint', 'Scissors', 'Decorative items']
-    },
-    {
-      title: 'Vertical Garden',
-      description: 'Create hanging planters from bottles',
-      difficulty: 'Medium',
-      youtubeLink: 'https://youtube.com/watch?v=example2',
-      materials: ['Plastic bottles', 'Rope', 'Soil', 'Seeds']
-    }
-  ],
-  glass_bottles: [],
-  paper_waste: [],
-  cardboard: []
-};
-=======
-import { useNavigation } from '@react-navigation/native';
 import { RootStackNavigationProp } from '../types/navigation';
 
-interface WasteForm {
-  type: string;
-  quantity: string;
-  unit: string;
-  condition: string;
-  description: string;
-  images: ImagePicker.ImagePickerAsset[];
-  location: Location.LocationObject | null;
-}
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
+const MAX_LOAD_ATTEMPTS = 3;
 
 const WASTE_TYPES = [
   'Wood/Sawdust',
@@ -75,44 +32,145 @@ const WASTE_TYPES = [
   'Other'
 ];
 
-const MOCK_SUGGESTIONS = {
+interface Suggestion {
+  title: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  materials: string[];
+}
+
+const MOCK_SUGGESTIONS: Record<string, Suggestion[]> = {
   'Wood/Sawdust': [
-    { title: 'DIY Plant Pots', difficulty: 'Easy', materials: ['Sawdust', 'Paper', 'Glue'] },
-    { title: 'Fire Starters', difficulty: 'Easy', materials: ['Sawdust', 'Wax'] }
+    { 
+      title: 'DIY Plant Pots', 
+      difficulty: 'Easy', 
+      materials: ['Sawdust', 'Paper', 'Glue'] 
+    },
+    { 
+      title: 'Fire Starters', 
+      difficulty: 'Easy', 
+      materials: ['Sawdust', 'Wax'] 
+    }
   ],
   'Plastic': [
-    { title: 'Vertical Garden', difficulty: 'Medium', materials: ['Plastic Bottles', 'Rope', 'Soil'] },
-    { title: 'Storage Containers', difficulty: 'Easy', materials: ['Plastic Containers', 'Paint'] }
+    { 
+      title: 'Vertical Garden', 
+      difficulty: 'Medium', 
+      materials: ['Plastic Bottles', 'Rope', 'Soil'] 
+    },
+    { 
+      title: 'Storage Containers', 
+      difficulty: 'Easy', 
+      materials: ['Plastic Containers', 'Paint'] 
+    }
   ],
   'Paper/Cardboard': [
-    { title: 'DIY Gift Boxes', difficulty: 'Easy', materials: ['Cardboard', 'Paper', 'Glue'] },
-    { title: 'Wall Art', difficulty: 'Medium', materials: ['Paper', 'Paint', 'Frame'] }
+    { 
+      title: 'DIY Gift Boxes', 
+      difficulty: 'Easy', 
+      materials: ['Cardboard', 'Paper', 'Glue'] 
+    },
+    { 
+      title: 'Wall Art', 
+      difficulty: 'Medium', 
+      materials: ['Paper', 'Paint', 'Frame'] 
+    }
   ]
 };
 
+type WasteType = 'plastic_bottle' | 'glass_bottles' | 'paper_waste' | 'cardboard';
+
+// Add DIY recommendations database
+const DIY_MODEL_URL = 'https://teachablemachine.withgoogle.com/models/mH9HKRCUG/';
+
+const diyRecommendations: Record<string, DIYProject[]> = {
+  'plastic_bottles': [
+    {
+      title: 'Self-Watering Planter',
+      description: 'Create a beautiful self-watering planter from plastic bottles',
+      difficulty: 'Easy',
+      youtubeLink: 'https://www.youtube.com/watch?v=h0rlrwqyuVQ',
+      materials: ['2L Plastic bottle', 'Scissors', 'String/Rope', 'Potting soil', 'Plant']
+    },
+    {
+      title: 'Bird Feeder',
+      description: 'Make a simple bird feeder from plastic bottles',
+      youtubeLink: 'https://www.youtube.com/watch?v=S2GJqF7QqvY',
+      difficulty: 'Easy',
+      materials: ['Plastic bottle', 'Wooden spoons', 'String', 'Bird seeds']
+    }
+  ],
+  'paper_waste': [
+    {
+      title: 'Paper Basket',
+      description: 'Weave a beautiful basket using old newspapers',
+      difficulty: 'Medium',
+      youtubeLink: 'https://www.youtube.com/watch?v=E8P_uI2o_O8',
+      materials: ['Old newspapers', 'Glue', 'Paint', 'Scissors']
+    },
+    {
+      title: 'Paper Beads Jewelry',
+      description: 'Create colorful jewelry from magazine pages',
+      difficulty: 'Easy',
+      youtubeLink: 'https://www.youtube.com/watch?v=xja5e5jkzWQ',
+      materials: ['Magazines/Papers', 'Glue', 'String', 'Scissors']
+    }
+  ],
+  'cardboard': [
+    {
+      title: 'Desk Organizer',
+      description: 'Make a stylish desk organizer from cardboard boxes',
+      difficulty: 'Medium',
+      youtubeLink: 'https://www.youtube.com/watch?v=6E1-EJQNoq8',
+      materials: ['Cardboard boxes', 'Glue', 'Scissors', 'Decorative paper']
+    },
+    {
+      title: 'Wall Art',
+      description: 'Create amazing 3D wall art using cardboard',
+      difficulty: 'Hard',
+      youtubeLink: 'https://www.youtube.com/watch?v=Vxd5ZMqVYnE',
+      materials: ['Cardboard', 'Paint', 'Craft knife', 'Ruler']
+    }
+  ],
+  'glass_bottles': [
+    {
+      title: 'Decorative Vase',
+      description: 'Transform glass bottles into beautiful vases',
+      difficulty: 'Easy',
+      youtubeLink: 'https://www.youtube.com/watch?v=JB6EAEH1Pe0',
+      materials: ['Glass bottle', 'Paint', 'Rope', 'Decorative items']
+    },
+    {
+      title: 'Bottle Lamp',
+      description: 'Create an elegant lamp from a glass bottle',
+      difficulty: 'Medium',
+      youtubeLink: 'https://www.youtube.com/watch?v=sPS7_QZToQ4',
+      materials: ['Glass bottle', 'LED string lights', 'Drill', 'Decorative items']
+    }
+  ]
+};
+
+interface WasteForm {
+  type: string;
+  quantity: string;
+  unit: string;
+  condition: string;
+  description: string;
+  images: ImagePicker.ImagePickerAsset[];
+  location: Location.LocationObject | null;
+}
+
+interface DIYProject {
+  title: string;
+  description: string;
+  difficulty: string;
+  youtubeLink: string;
+  materials: string[];
+}
+
 const AddWasteScreen = () => {
-<<<<<<< HEAD
-  const qeRef=useRef<QRCode>(null);
-  interface WasteForm {
-    type: string;
-    quantity: string;
-    unit: string;
-    condition: string;
-    images: ImagePicker.ImagePickerAsset[];
-    location: Location.LocationObject | null;
-  }
-  
-  const [form, setForm] = useState<WasteForm>({
-      type: '',
-      quantity: '',
-      unit: 'kg',
-      condition: '',
-      images: [],
-      location: null,
-    });
-=======
-  const qrRef = useRef<QRCode>(null);
   const navigation = useNavigation<RootStackNavigationProp>();
+  const qrRef = useRef<QRCode>(null);
+  const modelRef = useRef<any>(null);
 
   const [form, setForm] = useState<WasteForm>({
     type: '',
@@ -124,12 +182,15 @@ const AddWasteScreen = () => {
     location: null,
   });
 
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
-  const [qrData, setQrData] = useState<WasteQRData | null>(null);
+  const [modelLoadAttempts, setModelLoadAttempts] = useState(0);
+  const [diyLoading, setDiyLoading] = useState(false);
+  const [diyResults, setDiyResults] = useState<DIYProject[]>([]);
+  const [diyImage, setDiyImage] = useState<string | null>(null);
+  const [showDIY, setShowDIY] = useState(false);
   const [showQR, setShowQR] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [qrData, setQrData] = useState<WasteQRData | null>(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -236,66 +297,115 @@ const AddWasteScreen = () => {
     setShowQR(true);
   };
 
-  const [showDIY, setShowDIY] = useState(false);
-  const [diyImage, setDiyImage] = useState<string | null>(null);
-  const [diyLoading, setDiyLoading] = useState(false);
-  const [diyResults, setDiyResults] = useState<any[]>([]);
-  const modelRef = useRef<tf.LayersModel | null>(null);
-
-  const loadModel = async () => {
+  const loadModel = async (): Promise<boolean> => {
     try {
+      setDiyLoading(true);
+      
+      if (modelLoadAttempts >= MAX_LOAD_ATTEMPTS) {
+        Alert.alert(
+          'Error',
+          'Unable to load AI model after multiple attempts. Please try again later.',
+          [
+            { 
+              text: 'Try Again',
+              onPress: () => {
+                setModelLoadAttempts(0);
+                loadModel();
+              }
+            },
+            { text: 'Cancel' }
+          ]
+        );
+        return false;
+      }
+
+      // Initialize TensorFlow.js
       await tf.ready();
-      // Load model directly from Teachable Machine URL
-      modelRef.current = await tf.loadLayersModel(
-        'https://teachablemachine.withgoogle.com/models/mH9HKRCUG/model.json'
-      );
+      
+      // Load model and metadata from local assets
+      const modelJson = require('../../../assets/model.json');
+      const modelMetadata = require('../../../assets/metadata.json');
+      
+      // Note: weights.bin will be automatically loaded based on the paths in model.json
+      modelRef.current = {
+        model: await tf.loadLayersModel(modelJson),
+        metadata: modelMetadata
+      };
+
+      setDiyLoading(false);
+      return true;
     } catch (error) {
       console.error('Error loading model:', error);
-      Alert.alert('Error', 'Failed to load AI model');
+      
+      // Increment attempt counter
+      setModelLoadAttempts(prev => prev + 1);
+      
+      // Show retry message
+      Alert.alert(
+        'Loading Issue',
+        `Failed to load AI model (Attempt ${modelLoadAttempts + 1}/${MAX_LOAD_ATTEMPTS}). Retrying...`,
+        [{ text: 'OK' }]
+      );
+
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return loadModel();
     }
   };
 
   const analyzeDIYImage = async (imageUri: string) => {
     setDiyLoading(true);
     try {
-      if (!modelRef.current) await loadModel();
-      
+      // Ensure model is loaded
+      if (!modelRef.current) {
+        const modelLoaded = await loadModel();
+        if (!modelLoaded) {
+          throw new Error('Failed to load model');
+        }
+      }
+
+      // Load and process image for prediction
       const imgB64 = await FileSystem.readAsStringAsync(imageUri, {
         encoding: FileSystem.EncodingType.Base64,
       });
+      
+      // Convert base64 to raw bytes
       const imgBuffer = tf.util.encodeString(imgB64, 'base64').buffer;
       const raw = new Uint8Array(imgBuffer);
-      const imageTensor = decodeJpeg(raw);
       
-      // Process image
-      const resized = tf.image.resizeBilinear(imageTensor, [224, 224]);
+      // Decode JPEG to tensor
+      const imageTensor = tf.node.decodeJpeg(raw);
+      
+      // Preprocess image
+      const resized = tf.image.resizeBilinear(imageTensor, [224, 224]); // Adjust size if your model expects different dimensions
       const expanded = resized.expandDims(0);
       const normalized = expanded.div(255.0);
-      const prediction = await modelRef.current?.predict(normalized);
+
+      // Make prediction
+      const predictions = await modelRef.current.model.predict(normalized);
+      const probabilities = await predictions.data();
       
-      if (prediction) {
-        // Get the index of the highest probability
-        const predictionArray = await prediction.data();
-        const maxIndex = predictionArray.indexOf(Math.max(...predictionArray));
-        
-        // Map index to waste type based on your Teachable Machine classes
-        const wasteTypes = ['plastic_bottle', 'glass_bottles', 'paper_waste', 'cardboard'];
-        const predictedType = wasteTypes[maxIndex];
-        
-        if (diyRecommendations[predictedType]) {
-          setDiyResults(diyRecommendations[predictedType]);
-          Alert.alert(
-            'Waste Identified!', 
-            `This appears to be ${predictedType.replace('_', ' ')}. Here are some DIY ideas!`
-          );
-        } else {
-          Alert.alert('Sorry', 'No DIY recommendations available for this type of waste yet.');
-        }
-      }
+      // Get the class with highest probability
+      const maxProbability = Math.max(...probabilities);
+      const predictedIndex = probabilities.indexOf(maxProbability);
+      const predictedClass = modelRef.current.metadata.labels[predictedIndex];
+
+      // Set the predicted waste type
+      setForm(prev => ({
+        ...prev,
+        type: predictedClass
+      }));
+
+      // Clean up tensors
+      tf.dispose([imageTensor, resized, expanded, normalized, predictions]);
+      
+      setDiyLoading(false);
     } catch (error) {
       console.error('Error analyzing image:', error);
-      Alert.alert('Error', 'Failed to analyze image');
-    } finally {
+      Alert.alert(
+        'Error',
+        'Failed to analyze the image. Please try again.'
+      );
       setDiyLoading(false);
     }
   };
@@ -317,19 +427,6 @@ const AddWasteScreen = () => {
   };
 
   return (
-<<<<<<< HEAD
-    <>
-      <ScrollView style={styles.container}>
-        <Text h4 style={styles.title}>List Your Waste</Text>
-        
-        <Input
-          placeholder="Type of waste (e.g., Sawdust)"
-          value={form.type}
-          onChangeText={(text: string) => setForm(prev => ({ ...prev, type: text }))}
-          errorStyle={{ color: 'red' }}
-          errorMessage={form.type.trim() ? '' : 'Required field'}
-        />
-=======
     <ScrollView style={styles.container}>
       <Text h4 style={styles.title}>List Your Waste</Text>
       
@@ -353,7 +450,6 @@ const AddWasteScreen = () => {
           ))}
         </ScrollView>
       </View>
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
 
       <Input
         placeholder="Quantity"
@@ -373,57 +469,6 @@ const AddWasteScreen = () => {
         label="Condition *"
       />
 
-<<<<<<< HEAD
-        <Button
-          title={`Add Photos (${form.images.length} selected)`}
-          onPress={pickImage}
-          containerStyle={styles.buttonContainer}
-          icon={{
-            name: 'image',
-            type: 'material',
-            size: 24,
-            color: 'white',
-          }}
-        />
-
-        <Button
-          title={form.location ? "Location Added ✓" : "Get Current Location"}
-          onPress={getLocation}
-          containerStyle={styles.buttonContainer}
-          disabled={!!form.location}
-          icon={{
-            name: 'location-on',
-            type: 'material',
-            size: 24,
-            color: 'white',
-          }}
-        />
-
-        <Button
-          title="Submit Listing"
-          onPress={handleSubmit}
-          containerStyle={styles.submitButton}
-          icon={{
-            name: 'check-circle',
-            type: 'material',
-            size: 24,
-            color: 'white',
-          }}
-        />
-
-        <Button
-          title="Get DIY Ideas"
-          onPress={() => setShowDIY(true)}
-          containerStyle={styles.diyButton}
-          icon={{
-            name: 'lightbulb',
-            type: 'material',
-            size: 24,
-            color: 'white',
-          }}
-        />
-      </ScrollView>
-=======
       <Input
         placeholder="Describe your waste material and any specific details"
         value={form.description}
@@ -519,7 +564,6 @@ const AddWasteScreen = () => {
           </View>
         </View>
       </Modal>
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
 
       <Modal
         visible={showQR}
@@ -562,7 +606,6 @@ const AddWasteScreen = () => {
           </View>
         </View>
       </Modal>
-<<<<<<< HEAD
 
       <Modal
         visible={showDIY}
@@ -623,73 +666,54 @@ const AddWasteScreen = () => {
           </View>
         </View>
       </Modal>
-    </>
-=======
     </ScrollView>
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-<<<<<<< HEAD
-    backgroundColor: '#E8F5E9', // Light green background
+    backgroundColor: '#E8F5E9',
     padding: 16,
   },
-  qrContainer: {
-    alignItems: 'center',
-    marginVertical: 20,
+  suggestionsSection: {
+    marginVertical: 15,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 12,
   },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
+  suggestionCard: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 6,
+    padding: 10,
+    marginVertical: 5,
+  },
+  suggestionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2E7D32',
+    marginBottom: 5,
+  },
+  suggestionDifficulty: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 5,
+  },
+  buttonMargin: {
+    marginRight: 10,
   },
   modalButton: {
-    flex: 1,
-    marginHorizontal: 4,
-=======
-    backgroundColor: '#fff',
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
+    marginVertical: 5,
+    width: '100%',
   },
   title: {
     color: '#2E7D32',
     textAlign: 'center',
     marginVertical: 20,
+    fontSize: 24,
   },
   section: {
     marginBottom: 20,
-<<<<<<< HEAD
-    fontSize: 24,
-  },
-  inputContainer: {
-    backgroundColor: '#F1F8E9',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 15,
-  },
-  inputLabel: {
-    color: '#2E7D32',
-    fontSize: 16,
-  },
-  buttonContainer: {
-    marginVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#43A047',
-  },
-  submitButton: {
-    marginTop: 20,
-    marginBottom: 40,
-    backgroundColor: '#2E7D32',
-    borderRadius: 8,
-  },
-  diyButton: {
-    marginTop: 20,
-    backgroundColor: '#2E7D32', // Dark green
-    borderRadius: 8,
-=======
-    paddingHorizontal: 15,
   },
   sectionTitle: {
     fontSize: 16,
@@ -722,7 +746,6 @@ const styles = StyleSheet.create({
   },
   imageSection: {
     marginVertical: 15,
-    paddingHorizontal: 15,
   },
   imageGrid: {
     flexDirection: 'row',
@@ -759,25 +782,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  suggestionsSection: {
-    marginVertical: 15,
-    paddingHorizontal: 15,
-  },
-  suggestionCard: {
-    backgroundColor: '#f8f8f8',
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 5,
-  },
-  suggestionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  suggestionDifficulty: {
-    color: '#666',
-    marginVertical: 5,
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
-  },
   modalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -785,30 +789,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-<<<<<<< HEAD
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 15,
-    width: '90%',
-    maxHeight: '80%',
-  },
-  modalTitle: {
-    textAlign: 'center',
-    color: '#2E7D32',
-    marginBottom: 20,
-=======
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 20,
     width: '80%',
-    alignItems: 'stretch',
+    maxHeight: '80%',
   },
   modalTitle: {
     textAlign: 'center',
     marginBottom: 20,
   },
-  modalButton: {
-    marginVertical: 5,
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
   buttonContainer: {
     marginHorizontal: 15,
@@ -821,7 +814,6 @@ const styles = StyleSheet.create({
   qrContainer: {
     alignItems: 'center',
     marginVertical: 20,
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
   },
   uploadButton: {
     marginVertical: 20,
@@ -849,7 +841,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-<<<<<<< HEAD
   diyDescription: {
     color: '#1B5E20',
     fontSize: 16,
@@ -875,14 +866,10 @@ const styles = StyleSheet.create({
   closeButton: {
     marginTop: 20,
     borderColor: '#43A047',
-=======
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
   },
-  buttonMargin: {
-    marginRight: 10,
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
+  wasteId: {
+    marginTop: 10,
+    color: '#666',
   },
 });
 

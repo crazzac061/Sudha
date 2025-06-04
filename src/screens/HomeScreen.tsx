@@ -110,6 +110,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F5E9', // Light green background
     padding: 10,
   },
+  scrollContent: {
+    paddingBottom: 20,
+  },
   cardContainer: {
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
@@ -130,7 +133,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginVertical: 5,
   },
-<<<<<<< HEAD
   buttonContainer: {
     marginTop: 15,
     borderRadius: 8,
@@ -143,15 +145,9 @@ const styles = StyleSheet.create({
   divider: {
     backgroundColor: '#81C784', // Light green divider
     height: 1.5,
-=======
-  scrollContent: {
-    padding: 10,
   },
   fab: {
     margin: 16,
-    right: 0,
-    bottom: 0,
->>>>>>> 37acbed708e60e8f5db28d845244d5d9b80bc4a6
   },
 });
 
