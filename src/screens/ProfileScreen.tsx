@@ -61,28 +61,89 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#E8F5E9',
   },
   header: {
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',
-  },
-  avatar: {
-    backgroundColor: '#2089dc',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     marginBottom: 10,
   },
-  badge: {
-    marginVertical: 5,
-    fontWeight: '500',
+  avatar: {
+    backgroundColor: '#43A047',
+    marginBottom: 10,
   },
-  subtitle: {
-    marginTop: 10,
-    fontWeight: '500',
+  welcomeText: {
+    color: '#2E7D32',
+    marginBottom: 5,
+  },
+  subText: {
+    color: '#666',
+    fontSize: 16,
+  },
+  cardContainer: {
+    borderRadius: 15,
+    marginHorizontal: 10,
+    marginVertical: 8,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  cardTitle: {
+    color: '#2E7D32',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#43A047',
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
+  },
+  buttonContainer: {
+    marginTop: 15,
+    borderRadius: 8,
   },
   button: {
-    margin: 20,
+    backgroundColor: '#43A047',
+    paddingVertical: 12,
+    borderRadius: 8,
   },
+  divider: {
+    backgroundColor: '#81C784',
+    height: 1.5,
+  },
+  listItem: {
+    paddingVertical: 8,
+    fontSize: 16,
+    color: '#1B5E20',
+  },
+  badge: {
+    paddingVertical: 5,
+    fontSize: 16,
+    color: '#43A047',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginVertical: 5,
+  }
 });
-
 export default ProfileScreen;

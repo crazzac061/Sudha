@@ -40,11 +40,43 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#E8F5E9', // Light green background
+    padding: 10,
+  },
+  cardContainer: {
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    marginBottom: 15,
+  },
+  cardTitle: {
+    color: '#2E7D32', // Dark green text
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  cardText: {
+    color: '#1B5E20', // Darker green text
+    fontSize: 16,
+    marginVertical: 5,
   },
   buttonContainer: {
-    marginTop: 10,
+    marginTop: 15,
+    borderRadius: 8,
+  },
+  button: {
+    backgroundColor: '#43A047', // Green button
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  divider: {
+    backgroundColor: '#81C784', // Light green divider
+    height: 1.5,
   },
 });
+
 
 export default HomeScreen;
