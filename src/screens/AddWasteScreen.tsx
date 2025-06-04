@@ -8,7 +8,6 @@ import * as FileSystem from 'expo-file-system';
 import { WasteQRData, formatWasteQRData, shareQRCode } from '../utils/wasteUtils';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackNavigationProp } from '../types/navigation';
-
 interface WasteForm {
   type: string;
   quantity: string;
